@@ -1,0 +1,143 @@
+# encoding: utf-8
+grammar CascadingStylesheets
+  
+  rule ident
+    '-'? nmstart nmchar*
+  end
+  
+  rule name
+    nmchar nmchar*
+  end
+  
+  rule nmstart
+    [a-zA-Z] / '_' / nonascii / escape
+  end
+  
+  rule nonascii
+    [\x80-\xD7FF\xE000-\xFFFD\x10000-\x10FFFF]
+  end
+  
+  rule unicode
+    '\\' [0-9a-fA-F] 1..6 wc?
+  end
+  
+  rule escape
+    unicode / '\\' [\x20-\x7E\x80-\xD7FF\xE000-\xFFFD\x10000-\x10FFFF]
+  end
+  
+  rule nmchar
+    [a-zA-Z0-9] / '-' / '_' / nonascii / escape
+  end
+  
+  rule num
+    [0-9]+ / [0-9]* '.' [0-9]+
+  end
+  
+  rule string
+    '"' (stringchar / "'")* '"' / "'" (stringchar / '"')* "'"
+  end
+  
+  rule stringchar
+    urlchar / '\x20' / '\\' nl
+  end
+  
+  rule urlchar
+    [\x9\x21\x23-\x26\x27-\x7E] / nonascii / escape
+  end
+  
+  rule nl
+    '\xA' / '\xD' '\xA' / '\xD' / '\xC'
+  end
+  
+  rule w
+    wc*
+  end
+  
+  rule wc
+    '\x9' / '\xA' / '\xC' / '\xD' / '\x20'
+  end
+  
+  rule css_ident
+    ident
+  end
+  
+  rule css_atkeyword
+    '@' ident
+  end
+  
+  rule css_string
+    string
+  end
+  
+  rule css_hash
+    '#' name
+  end
+  
+  rule css_number
+    num
+  end
+  
+  rule css_percentage
+    num '%'
+  end
+  
+  rule css_dimension
+    num ident
+  end
+  
+  rule css_uri
+    'url(' w (string / urlchar*) w ')'
+  end
+  
+  rule css_unicode_range
+    'U+' [0-9A-F?] 1..6 ('-' [0-9A-F] 1..6)?
+  end
+  
+  rule css_cdo
+    '<!--'
+  end
+  
+  rule css_cdc
+    '-->'
+  end
+  
+  rule css_s
+    wc+
+  end
+  
+  rule css_comment
+    '/*' [^*]* '*'+ ([^/] [^*]* '*'+)* '/'
+  end
+  
+  rule css_function
+    ident '('
+  end
+  
+  rule css_includes
+    '~='
+  end
+  
+  rule css_dashmatch
+    '|='
+  end
+  
+  rule css_prefixmatch
+    '^='
+  end
+  
+  rule css_suffixmatch
+    '$='
+  end
+  
+  rule css_substringmatch
+    '*='
+  end
+  
+  rule css_char
+    [^"']
+  end
+  
+  rule css_bom
+    '\xFEFF'
+  end
+end
