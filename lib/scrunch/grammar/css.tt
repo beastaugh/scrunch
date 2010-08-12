@@ -1,143 +1,244 @@
 # encoding: utf-8
 grammar CascadingStylesheets
+
+  # stylesheet : [ CDO | CDC | S | statement ]*;
+  rule stylesheet
+    (cdo / cdc / s / statement)*
+  end
   
+  # statement : ruleset | at-rule;
+  rule statement
+    ruleset / at_rule
+  end
+  
+  # at-rule : ATKEYWORD S* any* [ block | ';' S* ];
+  rule at_rule
+    atkeyword  s* any* (block / ';' s*)
+  end
+  
+  # block : '{' S* [ any | block | ATKEYWORD S* | ';' S* ]* '}' S*;
+  rule block
+    '{' s* (any / block / atkeyword s* / ';' s*)* '}' s*
+  end
+  
+  # ruleset : selector? '{' S* declaration? [ ';' S* declaration? ]* '}' S*;
+  rule ruleset
+    selector? '{' s* declaration? (';' s* declaration?)* '}' s*
+  end
+  
+  # selector : any+;
+  rule selector
+    any+
+  end
+  
+  # declaration : property ':' S* value;
+  rule declaration
+    property ';' s* value
+  end
+  
+  # property : IDENT S*;
+  rule property
+    ident s*
+  end
+  
+  # value : [ any | block | ATKEYWORD S* ]+;
+  rule value
+    (any / block / atkeyword s*)+
+  end
+  
+  # any : [ IDENT | NUMBER | PERCENTAGE | DIMENSION | STRING
+  #       | DELIM | URI | HASH | UNICODE-RANGE | INCLUDES
+  #       | FUNCTION S* any* ')' | DASHMATCH | '(' S* any* ')'
+  #       | '[' S* any* ']' ] S*;
+  rule any
+    ( ident / number / percentage / dimension / string
+    / delim / uri / hash / unicode_range / includes
+    / function s* any* ')' / dashmatch / '(' s* any* ')'
+    / '[' s* any* ']' ) s*
+  end
+  
+  
+  
+  # The following productions are the complete list of tokens in CSS3:
+  # ------------------------------------------------------------------
+  
+  # # IDENT ::= ident
+  # rule ident
+  #   ident
+  # end
+  
+  # ATKEYWORD ::= '@' ident
+  rule atkeyword
+    '@' ident
+  end
+  
+  # # STRING ::= string
+  # rule string
+  #   string
+  # end
+  
+  # HASH ::= '#' name
+  rule hash
+    '#' name
+  end
+  
+  # NUMBER ::= num
+  rule number
+    num
+  end
+  
+  # PERCENTAGE ::= num '%'
+  rule percentage
+    num '%'
+  end
+  
+  # DIMENSION ::= num ident
+  rule dimension
+    num ident
+  end
+  
+  # URI ::= "url(" w (string | urlchar*) w ")"
+  rule uri
+    'url(' w (string / urlchar*) w ')'
+  end
+  
+  # UNICODE-RANGE ::= "U+" [0-9A-F?]{1,6} ('-' [0-9A-F]{1,6})?
+  rule unicode_range
+    'U+' [0-9A-F?] 1..6 ('-' [0-9A-F] 1..6)?
+  end
+  
+  # CDO ::= "<!--"
+  rule cdo
+    '<!--'
+  end
+  
+  # CDC ::= "-->"
+  rule cdc
+    '-->'
+  end
+  
+  # S ::= wc+
+  rule s
+    wc+
+  end
+  
+  # COMMENT ::= "/*" [^*]* '*'+ ([^/] [^*]* '*'+)* "/"
+  rule comment
+    '/*' [^*]* '*'+ ([^/] [^*]* '*'+)* '/'
+  end
+  
+  # FUNCTION ::= ident '('
+  rule function
+    ident '('
+  end
+  
+  # INCLUDES ::= "~="
+  rule includes
+    '~='
+  end
+  
+  # DASHMATCH ::= "|="
+  rule dashmatch
+    '|='
+  end
+  
+  # PREFIXMATCH ::= "^="
+  rule prefixmatch
+    '^='
+  end
+  
+  # SUFFIXMATCH ::= "$="
+  rule suffixmatch
+    '$='
+  end
+  
+  # SUBSTRINGMATCH ::= "*="
+  rule substringmatch
+    '*='
+  end
+  
+  # CHAR :: = any other character not matched by the above rules, except for " or '
+  rule char
+    [^"']
+  end
+  
+  # BOM ::= #xFEFF
+  rule bom
+    '\xFEFF'
+  end
+  
+  
+  
+  # The following productions are parts of tokens:
+  # ----------------------------------------------
+  
+  # ident	::= '-'? nmstart nmchar*
   rule ident
     '-'? nmstart nmchar*
   end
   
+  # name ::= nmchar*
   rule name
     nmchar nmchar*
   end
   
+  # nmstart ::= [a-zA-Z] | '_' | nonascii | escape
   rule nmstart
     [a-zA-Z] / '_' / nonascii / escape
   end
   
+  # nonascii ::= [#x80-#xD7FF#xE000-#xFFFD#x10000-#x10FFFF]
   rule nonascii
     [\x80-\xD7FF\xE000-\xFFFD\x10000-\x10FFFF]
   end
   
+  # unicode ::= '\' [0-9a-fA-F]{1,6} wc?
   rule unicode
     '\\' [0-9a-fA-F] 1..6 wc?
   end
   
+  # escape ::= unicode | '\' [#x20-#x7E#x80-#xD7FF#xE000-#xFFFD#x10000-#x10FFFF]
   rule escape
     unicode / '\\' [\x20-\x7E\x80-\xD7FF\xE000-\xFFFD\x10000-\x10FFFF]
   end
   
+  # nmchar ::= [a-zA-Z0-9] | '-' | '_' | nonascii | escape
   rule nmchar
     [a-zA-Z0-9] / '-' / '_' / nonascii / escape
   end
   
+  # num ::= [0-9]+ | [0-9]* '.' [0-9]+
   rule num
     [0-9]+ / [0-9]* '.' [0-9]+
   end
   
+  # string ::= '"' (stringchar | "'")* '"' | "'" (stringchar | '"')* "'"
   rule string
     '"' (stringchar / "'")* '"' / "'" (stringchar / '"')* "'"
   end
   
+  # stringchar ::= urlchar | #x20 | '\' nl
   rule stringchar
     urlchar / '\x20' / '\\' nl
   end
   
+  # urlchar ::= [#x9#x21#x23-#x26#x27-#x7E] | nonascii | escape
   rule urlchar
     [\x9\x21\x23-\x26\x27-\x7E] / nonascii / escape
   end
   
+  # nl ::= #xA | #xD #xA | #xD | #xC
   rule nl
     '\xA' / '\xD' '\xA' / '\xD' / '\xC'
   end
   
+  # w ::= wc*
   rule w
     wc*
   end
   
+  # wc ::= #x9 | #xA | #xC | #xD | #x20
   rule wc
     '\x9' / '\xA' / '\xC' / '\xD' / '\x20'
-  end
-  
-  rule css_ident
-    ident
-  end
-  
-  rule css_atkeyword
-    '@' ident
-  end
-  
-  rule css_string
-    string
-  end
-  
-  rule css_hash
-    '#' name
-  end
-  
-  rule css_number
-    num
-  end
-  
-  rule css_percentage
-    num '%'
-  end
-  
-  rule css_dimension
-    num ident
-  end
-  
-  rule css_uri
-    'url(' w (string / urlchar*) w ')'
-  end
-  
-  rule css_unicode_range
-    'U+' [0-9A-F?] 1..6 ('-' [0-9A-F] 1..6)?
-  end
-  
-  rule css_cdo
-    '<!--'
-  end
-  
-  rule css_cdc
-    '-->'
-  end
-  
-  rule css_s
-    wc+
-  end
-  
-  rule css_comment
-    '/*' [^*]* '*'+ ([^/] [^*]* '*'+)* '/'
-  end
-  
-  rule css_function
-    ident '('
-  end
-  
-  rule css_includes
-    '~='
-  end
-  
-  rule css_dashmatch
-    '|='
-  end
-  
-  rule css_prefixmatch
-    '^='
-  end
-  
-  rule css_suffixmatch
-    '$='
-  end
-  
-  rule css_substringmatch
-    '*='
-  end
-  
-  rule css_char
-    [^"']
-  end
-  
-  rule css_bom
-    '\xFEFF'
   end
 end
