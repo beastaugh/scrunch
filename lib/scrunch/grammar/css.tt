@@ -1,6 +1,9 @@
 # encoding: utf-8
 grammar CascadingStylesheets
-
+  
+  # Below is the core syntax for CSS.
+  # ---------------------------------
+  
   # stylesheet : [ CDO | CDC | S | statement ]*;
   rule stylesheet
     (cdo / cdc / s / statement)*
